@@ -21,6 +21,9 @@ env.ChronosHub._connections = env.ChronosHub._connections or {}
 env.ChronosHub._booted = false
 
 local function trackConn(conn)
+    if not env.ChronosHub._connections then
+        env.ChronosHub._connections = {}
+    end
     table.insert(env.ChronosHub._connections, conn)
     return conn
 end
