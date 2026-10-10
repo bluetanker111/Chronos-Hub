@@ -986,7 +986,6 @@ local function findPetBasePart(petModel)
         or petModel.PrimaryPart
         or petModel:FindFirstChildWhichIsA("BasePart", true)
 end
-
 local function scanAllPets(minValue)
     minValue = minValue or 0
     local now = os.clock()
@@ -1014,32 +1013,57 @@ local function scanAllPets(minValue)
 
     for _, plot in ipairs(plots:GetChildren()) do
         local owner = readPlotOwner(plot)
-        for _, child in ipairs(plot:GetChildren()) do
-            local slotId = child.Name:match("^Slot(%d+)$")
-                        or child.Name:match("^Pet(%d+)$")
+        -- Look in AnimalPodiums, not direct children
+        local podiums = plot:FindFirstChild("AnimalPodiums")
+        local slots = podiums and podiums:GetChildren() or plot:GetChildren()
+
+        for _, slot in ipairs(slots) do
+            local slotId = slot.Name
+            -- Find the pet model inside the slot
             local petModel = nil
-            if slotId then
-                petModel = child
+            local idx = slot:GetAttribute("Index")
+                     or slot:GetAttribute("PetIndex")
+
+            if idx then
+                petModel = slot
             else
-                local idx = child:GetAttribute("Index")
-                         or child:GetAttribute("PetIndex")
-                if idx then
-                    petModel = child
-                    slotId = child.Name
+                -- Look for a descendant with Index attribute
+                for _, d in ipairs(slot:GetDescendants()) do
+                    local dIdx = d:GetAttribute("Index")
+                              or d:GetAttribute("PetIndex")
+                    if dIdx then
+                        petModel = d
+                        idx = dIdx
+                        break
+                    end
                 end
             end
+
             if petModel then
-                local idx, mut, traits = readPetAttributes(petModel)
-                local val = computeValue(idx, mut, traits)
+                local gotIdx, mut, traits = readPetAttributes(petModel)
+                local val = computeValue(gotIdx or idx, mut, traits)
+                -- Include even zero-value pets if minValue is 0
                 if val >= minValue then
                     local part = findPetBasePart(petModel)
-                    results[#results + 1] = {
-                        name = idx, value = val,
-                        mutation = mut, traits = traits,
-                        owner = owner, plot = plot.Name, slot = slotId,
-                        part = part, model = petModel,
-                        uid = plot.Name .. "_" .. tostring(slotId),
-                    }
+                    -- Fall back to the slot's Base.Spawn for ESP anchor
+                    if not part then
+                        local base = slot:FindFirstChild("Base")
+                        part = base and base:FindFirstChild("Spawn") or base
+                    end
+                    if part then
+                        results[#results + 1] = {
+                            name = gotIdx or idx or slot.Name,
+                            value = val,
+                            mutation = mut,
+                            traits = traits,
+                            owner = owner,
+                            plot = plot.Name,
+                            slot = slotId,
+                            part = part,
+                            model = petModel,
+                            uid = plot.Name .. "_" .. tostring(slotId),
+                        }
+                    end
                 end
             end
         end
@@ -1052,7 +1076,6 @@ local function scanAllPets(minValue)
     ScanCache.petCount = #results
     return results
 end
-
 Hub.DataCache = DataCache
 Hub.computeValue = computeValue
 Hub.scanAllPets = scanAllPets
@@ -1726,24 +1749,35 @@ Scheduler.add("stealTick", 8, 10, function()
 
     stealBusy = true
     task.spawn(function()
-        local prompt = nil
-        pcall(function()
-            if best.pet.part and best.pet.part.Parent then
-                for _, d in ipairs(best.pet.part:GetDescendants()) do
-                    if d:IsA("ProximityPrompt") then
+local prompt = nil
+pcall(function()
+    local searchRoot = best.pet.model or best.pet.part
+    if searchRoot and searchRoot.Parent then
+        for _, d in ipairs(searchRoot:GetDescendants()) do
+            if d:IsA("ProximityPrompt") and d.Enabled then
+                local at = (d.ActionText or ""):lower()
+                if at:find("steal") or at:find("grab")
+                   or at:find("take") or at:find("collect") then
+                    prompt = d break
+                end
+            end
+        end
+    end
+    if not prompt then
+        local plots = Workspace:FindFirstChild("Plots")
+        local plot = plots and plots:FindFirstChild(best.pet.plot)
+        if plot then
+            for _, d in ipairs(plot:GetDescendants()) do
+                if d:IsA("ProximityPrompt") and d.Enabled then
+                    local at = (d.ActionText or ""):lower()
+                    if at:find("steal") then
                         prompt = d break
                     end
                 end
-                if not prompt then
-                    for _, d in ipairs(best.pet.part:GetChildren()) do
-                        if d:IsA("ProximityPrompt") then
-                            prompt = d break
-                        end
-                    end
-                end
             end
-        end)
-
+        end
+    end
+end)
         if prompt then
             local ok, method = Network.FirePrompt(prompt)
             if ok then
