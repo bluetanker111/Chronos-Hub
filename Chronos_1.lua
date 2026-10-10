@@ -302,8 +302,8 @@ local DEFAULTS = {
         "love love bear", "phoenix", "antonio", "dragon gingerini", "kalika bros",
         "dragon aquanini", "fishino clownino", "moby bros", "bumbatron",
         "jelly moby", "digi narwhal", "la supreme combinasion", "kraken",
-        "ginger gerat", "hydra bunny", "s'more serat", "grabatron", "pancake and syrup"
-        "hydra dragon cannelloni", "la casa boo", "dragon cannelloni"
+        "ginger gerat", "hydra bunny", "s'more serat", "grabatron", "pancake and syrup",
+        "hydra dragon cannelloni", "la casa boo", "dragon cannelloni",
     },
 }
 
