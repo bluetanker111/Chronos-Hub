@@ -1003,66 +1003,74 @@ local function scanAllPets(minValue)
     end
 
     local results = {}
-    local plots = Workspace:FindFirstChild("Plots")
-    if not plots then
-        ScanCache.results = results
-        ScanCache.dirty = false
-        ScanCache.lastFullScan = now
-        return results
+    local seen = {}
+
+    local function addBrainrot(model, brainrotName, plotName, slotId)
+        if not model or not brainrotName or brainrotName == "" then return end
+        if seen[model] then return end
+        seen[model] = true
+
+        local mut = model:GetAttribute("Mutation")
+        if not mut or mut == "" then mut = "None" end
+        local traits = model:GetAttribute("Traits")
+
+        local val = computeValue(brainrotName, mut, traits)
+        if val < minValue then return end
+
+        local part = model:FindFirstChild("RootPart")
+            or model:FindFirstChild("HumanoidRootPart")
+            or model:FindFirstChild("Head")
+            or model.PrimaryPart
+            or model:FindFirstChildWhichIsA("BasePart", true)
+
+        if not part then return end
+
+        local uid = plotName and (plotName .. "_" .. tostring(slotId))
+                    or ("ws_" .. tostring(model))
+
+        results[#results + 1] = {
+            name = brainrotName,
+            value = val,
+            mutation = mut,
+            traits = traits,
+            owner = nil,
+            plot = plotName,
+            slot = slotId,
+            part = part,
+            model = model,
+            uid = uid,
+        }
     end
 
-    for _, plot in ipairs(plots:GetChildren()) do
-        local owner = readPlotOwner(plot)
-        -- Look in AnimalPodiums, not direct children
-        local podiums = plot:FindFirstChild("AnimalPodiums")
-        local slots = podiums and podiums:GetChildren() or plot:GetChildren()
-
-        for _, slot in ipairs(slots) do
-            local slotId = slot.Name
-            -- Find the pet model inside the slot
-            local petModel = nil
-            local idx = slot:GetAttribute("Index")
-                     or slot:GetAttribute("PetIndex")
-
-            if idx then
-                petModel = slot
-            else
-                -- Look for a descendant with Index attribute
-                for _, d in ipairs(slot:GetDescendants()) do
-                    local dIdx = d:GetAttribute("Index")
-                              or d:GetAttribute("PetIndex")
-                    if dIdx then
-                        petModel = d
-                        idx = dIdx
-                        break
-                    end
-                end
+    -- 1. UUID-named Models directly in Workspace (placed brainrots)
+    for _, child in ipairs(Workspace:GetChildren()) do
+        if child:IsA("Model") then
+            local idx = child:GetAttribute("Index")
+            if idx and idx ~= "" then
+                addBrainrot(child, idx, nil, nil)
             end
+        end
+    end
 
-            if petModel then
-                local gotIdx, mut, traits = readPetAttributes(petModel)
-                local val = computeValue(gotIdx or idx, mut, traits)
-                -- Include even zero-value pets if minValue is 0
-                if val >= minValue then
-                    local part = findPetBasePart(petModel)
-                    -- Fall back to the slot's Base.Spawn for ESP anchor
-                    if not part then
-                        local base = slot:FindFirstChild("Base")
-                        part = base and base:FindFirstChild("Spawn") or base
-                    end
-                    if part then
-                        results[#results + 1] = {
-                            name = gotIdx or idx or slot.Name,
-                            value = val,
-                            mutation = mut,
-                            traits = traits,
-                            owner = owner,
-                            plot = plot.Name,
-                            slot = slotId,
-                            part = part,
-                            model = petModel,
-                            uid = plot.Name .. "_" .. tostring(slotId),
-                        }
+    -- 2. RenderedMovingAnimals (being carried / stolen)
+    local rma = Workspace:FindFirstChild("RenderedMovingAnimals")
+    if rma then
+        for _, child in ipairs(rma:GetChildren()) do
+            if child:IsA("Model") and child.Name ~= "" then
+                addBrainrot(child, child.Name, nil, nil)
+            end
+        end
+    end
+
+    -- 3. Inside Plots (in case any are placed there)
+    local plots = Workspace:FindFirstChild("Plots")
+    if plots then
+        for _, plot in ipairs(plots:GetChildren()) do
+            for _, d in ipairs(plot:GetDescendants()) do
+                if d:IsA("Model") then
+                    local idx = d:GetAttribute("Index")
+                    if idx and idx ~= "" then
+                        addBrainrot(d, idx, plot.Name, d.Name)
                     end
                 end
             end
@@ -1756,9 +1764,11 @@ pcall(function()
         for _, d in ipairs(searchRoot:GetDescendants()) do
             if d:IsA("ProximityPrompt") and d.Enabled then
                 local at = (d.ActionText or ""):lower()
-                if at:find("steal") or at:find("grab")
-                   or at:find("take") or at:find("collect") then
-                    prompt = d break
+            if at:find("steal") or at:find("grab")
+               or at:find("take") or at:find("collect")
+               or at:find("interact") then   
+                prompt = d
+                break
                 end
             end
         end
@@ -1770,7 +1780,7 @@ pcall(function()
             for _, d in ipairs(plot:GetDescendants()) do
                 if d:IsA("ProximityPrompt") and d.Enabled then
                     local at = (d.ActionText or ""):lower()
-                    if at:find("steal") then
+                    if at:find("steal") or at:find("interact") then
                         prompt = d break
                     end
                 end
