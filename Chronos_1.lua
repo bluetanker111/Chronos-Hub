@@ -539,6 +539,8 @@ warn("=== CHRONOS_1A-5 END ===")
 warn("=== CHRONOS_1A-6 START ===")
 
 env.ChronosHub = {
+    -- Preserved from 1A-1
+    _connections = env.ChronosHub._connections,
     -- Services
     Players = Players,
     ReplicatedStorage = ReplicatedStorage,
