@@ -591,6 +591,7 @@ warn("=== CHRONOS_1 PART A COMPLETE ===")
 ]]
 
 warn("=== CHRONOS_1B-1 START ===")
+do
 
 local Hub = getgenv().ChronosHub
 if not Hub or not Hub._booted then
@@ -700,6 +701,7 @@ trackConn(RunService.Heartbeat:Connect(function()
 end))
 
 Hub.Scheduler = Scheduler
+end
 warn("=== CHRONOS_1B-1 END ===")
 --[[
     CHRONOS HUB — File 1, Part B
@@ -707,6 +709,7 @@ warn("=== CHRONOS_1B-1 END ===")
 ]]
 
 warn("=== CHRONOS_1B-2 START ===")
+do
 
 local Hub = getgenv().ChronosHub
 
@@ -831,6 +834,7 @@ Hub.SegmentCache = SegmentCache
 Hub.MutColor = MutColor
 Hub.fmtMutation = fmtMutation
 
+end
 warn("=== CHRONOS_1B-2 END ===")
 --[[
     CHRONOS HUB — File 1, Part B
@@ -838,6 +842,7 @@ warn("=== CHRONOS_1B-2 END ===")
 ]]
 
 warn("=== CHRONOS_1B-3 START ===")
+do
 
 local Hub = getgenv().ChronosHub
 local ReplicatedStorage = Hub.ReplicatedStorage
@@ -1048,6 +1053,7 @@ Hub.computeValue = computeValue
 Hub.scanAllPets = scanAllPets
 Hub.ScanCache = ScanCache
 
+end
 warn("=== CHRONOS_1B-3 END ===")
 --[[
     CHRONOS HUB — File 1, Part B
@@ -1056,6 +1062,7 @@ warn("=== CHRONOS_1B-3 END ===")
 ]]
 
 warn("=== CHRONOS_1B-4 START ===")
+do
 
 local Hub = getgenv().ChronosHub
 local Workspace    = Hub.Workspace
@@ -1481,6 +1488,7 @@ Hub.invalidateMyPlot = invalidateMyPlot
 Hub.markScanDirty = function() Hub.ScanCache.dirty = true end
 
 Log.info("Part 1B loaded ✔")
+end
 warn("=== CHRONOS_1B-4 END ===")
 warn("=== CHRONOS_1 PART B COMPLETE ===")
 --[[
@@ -1489,6 +1497,7 @@ warn("=== CHRONOS_1 PART B COMPLETE ===")
 ]]
 
 warn("=== CHRONOS_1C-1 START ===")
+do
 
 local Hub = getgenv().ChronosHub
 if not Hub or not Hub._booted then
@@ -1760,6 +1769,7 @@ end)
 Hub.StealSM = StealSM
 Hub.setState = setState
 
+end
 warn("=== CHRONOS_1C-1 END ===")
 --[[
     CHRONOS HUB — File 1, Part C
@@ -1768,6 +1778,7 @@ warn("=== CHRONOS_1C-1 END ===")
 ]]
 
 warn("=== CHRONOS_1C-2 START ===")
+do
 
 local Hub = getgenv().ChronosHub
 local Players      = Hub.Players
@@ -2052,6 +2063,7 @@ Store.subscribe("SafeMode", function(v)
     end
 end)
 
+end
 warn("=== CHRONOS_1C-2 END ===")
 --[[
     CHRONOS HUB — File 1, Part C
@@ -2059,6 +2071,7 @@ warn("=== CHRONOS_1C-2 END ===")
 ]]
 
 warn("=== CHRONOS_1C-3 START ===")
+do
 
 local Hub = getgenv().ChronosHub
 local Players          = Hub.Players
@@ -2436,6 +2449,7 @@ Scheduler.add("radar", 4, 68, function()
     end
 end)
 
+end
 warn("=== CHRONOS_1C-3 END ===")
 --[[
     CHRONOS HUB — File 1, Part C
@@ -2445,6 +2459,7 @@ warn("=== CHRONOS_1C-3 END ===")
 ]]
 
 warn("=== CHRONOS_1C-4A START ===")
+do
 
 local Hub = getgenv().ChronosHub
 local Players         = Hub.Players
@@ -2829,6 +2844,7 @@ Scheduler.add("roamProtect", 2, 42, function()
     end
 end)
 
+end
 warn("=== CHRONOS_1C-4A END ===")
 --[[
     CHRONOS HUB — File 1, Part C
@@ -2837,6 +2853,7 @@ warn("=== CHRONOS_1C-4A END ===")
 ]]
 
 warn("=== CHRONOS_1C-4B START ===")
+do
 
 local Hub = getgenv().ChronosHub
 local Players      = Hub.Players
@@ -3346,5 +3363,6 @@ task.defer(function()
         Color3.fromRGB(0, 200, 115))
 end)
 
+end
 warn("=== CHRONOS_1C-4B END ===")
 warn("=== CHRONOS_1 COMPLETE — RUN CHRONOS_2 ===")
