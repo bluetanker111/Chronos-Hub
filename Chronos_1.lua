@@ -3054,7 +3054,7 @@ task.spawn(function()
     local function nuke(inst)
         if inst:IsA("BlurEffect")
         or inst:IsA("ColorCorrectionEffect")
-        or inst:IsA("DepthOfFieldEffect")
+        or inst:IsA("DepthOfFieldEffect") then
             if Store.get("VisualCleanup") then
                 pcall(function() inst:Destroy() end)
             end
