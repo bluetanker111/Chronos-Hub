@@ -3055,7 +3055,6 @@ task.spawn(function()
         if inst:IsA("BlurEffect")
         or inst:IsA("ColorCorrectionEffect")
         or inst:IsA("DepthOfFieldEffect")
-        or inst:IsA("SunRaysEffect") then
             if Store.get("VisualCleanup") then
                 pcall(function() inst:Destroy() end)
             end
@@ -3079,8 +3078,7 @@ function Hub.enableFPSBoost()
     Hub.Lighting.EnvironmentSpecularScale = 0
     for _, c in ipairs(Hub.Lighting:GetChildren()) do
         if c:IsA("BloomEffect") or c:IsA("BlurEffect")
-        or c:IsA("ColorCorrectionEffect")
-        or c:IsA("SunRaysEffect") then
+        or c:IsA("ColorCorrectionEffect") then
             c:Destroy()
         end
     end
